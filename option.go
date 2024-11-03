@@ -6,6 +6,7 @@ type Option interface {
 	target() string
 	source() string
 	ignore() bool
+	defVal() any
 	qualifier() func(any) (any, error)
 }
 
