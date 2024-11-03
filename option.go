@@ -17,5 +17,5 @@ func optionsArrToMap(ctx context.Context, optionArr []Option) map[string]Option 
 		}
 		optionsMap[option.target()] = option
 	}
-	return nil
+	return optionsMap
 }
