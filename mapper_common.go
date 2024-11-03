@@ -2,7 +2,6 @@ package mapping
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 )
 
@@ -17,32 +16,27 @@ func mapping(
 		field := targetTypes.Field(i).Name
 
 		option, hasOption := options[field]
-		if hasOption && option.ignore() {
+		if !hasOption {
+			option = Simple{Target: field, Source: field}
+		}
+
+		if option.ignore() {
 			continue
 		}
 
 		var sourceValue reflect.Value
-		var usingCustomSourceName = false
-		if hasOption && option.source() != "" {
-			sourceValue = sourceValues.FieldByName(option.source())
-			usingCustomSourceName = true
+
+		if option.source() == "" && option.defVal() != nil {
+			sourceValue = reflect.ValueOf(option.defVal())
 		} else {
-			sourceValue = sourceValues.FieldByName(field)
-		}
-
-		if !sourceValue.IsValid() {
-			message := fmt.Sprintf("Source value is not found for field: %s", field)
-			if usingCustomSourceName {
-				getLogger(ctx).Error(message)
-			} else {
-				getLogger(ctx).Warn(message)
+			sourceValue = sourceValues.FieldByName(option.source())
+			if !sourceValue.IsValid() {
+				getLogger(ctx).Warnf("Source value is not found for field: %s", field)
+				continue
 			}
-			continue
 		}
 
-		targetValue := targetValues.Elem().FieldByName(field)
-
-		if hasOption && option.qualifier() != nil {
+		if option.qualifier() != nil {
 			qualified, err := option.qualifier()(sourceValue.Interface())
 			if err != nil {
 				getLogger(ctx).Errorf("Casting error: %v", err)
@@ -50,6 +44,12 @@ func mapping(
 			}
 			sourceValue = reflect.ValueOf(qualified)
 		}
+
+		if sourceValue.IsZero() && option.defVal() != nil {
+			sourceValue = reflect.ValueOf(option.defVal())
+		}
+
+		targetValue := targetValues.Elem().FieldByName(field)
 
 		if sourceValue.Type().AssignableTo(targetValue.Type()) {
 			targetValue.Set(sourceValue)

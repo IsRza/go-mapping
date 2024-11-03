@@ -1,21 +1,25 @@
 package mapping
 
-type IgnoreOption struct {
+type Ignore struct {
 	Target string
 }
 
-func (o IgnoreOption) target() string {
+func (o Ignore) target() string {
 	return o.Target
 }
 
-func (o IgnoreOption) source() string {
+func (o Ignore) source() string {
 	return ""
 }
 
-func (o IgnoreOption) ignore() bool {
+func (o Ignore) ignore() bool {
 	return true
 }
 
-func (o IgnoreOption) qualifier() func(any) (any, error) {
+func (o Ignore) defVal() any {
+	return nil
+}
+
+func (o Ignore) qualifier() func(any) (any, error) {
 	return nil
 }

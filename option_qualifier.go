@@ -2,25 +2,29 @@ package mapping
 
 import "fmt"
 
-type QualifierOption[I, O any] struct {
+type Qualified[I, O any] struct {
 	Target    string
 	Source    string
 	Qualifier func(I) O
 }
 
-func (o QualifierOption[I, O]) target() string {
+func (o Qualified[I, O]) target() string {
 	return o.Target
 }
 
-func (o QualifierOption[I, O]) source() string {
+func (o Qualified[I, O]) source() string {
 	return o.Source
 }
 
-func (o QualifierOption[I, O]) ignore() bool {
+func (o Qualified[I, O]) ignore() bool {
 	return false
 }
 
-func (o QualifierOption[I, O]) qualifier() func(any) (any, error) {
+func (o Qualified[I, O]) defVal() any {
+	return nil
+}
+
+func (o Qualified[I, O]) qualifier() func(any) (any, error) {
 	if o.Qualifier == nil {
 		return nil
 	}
